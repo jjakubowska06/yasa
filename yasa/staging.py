@@ -245,7 +245,7 @@ class SleepStaging:
             dt_filt = filter_data(
                 self.data[i, :], sf, l_freq=freq_broad[0], h_freq=freq_broad[1], verbose=False)
             # - Extract epochs. Data is now of shape (n_epochs, n_samples).
-            times, epochs = sliding_window(dt_filt, sf=sf, window=20)
+            times, epochs = sliding_window(dt_filt, sf=sf, window=30)
 
             # Calculate standard descriptive statistics
             hmob, hcomp = ant.hjorth_params(epochs, axis=1)
@@ -299,11 +299,11 @@ class SleepStaging:
         features = pd.concat(features, axis=1)
         features.index.name = 'epoch'
 
-        # Apply centered rolling average (15 epochs = 5 min)
+        # Apply centered rolling average (15 epochs = 7 min 30)
         # Triang: [0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1.,
         #          0.875, 0.75, 0.625, 0.5, 0.375, 0.25, 0.125]
         rollc = features.rolling(
-            window=10, center=True, min_periods=1, win_type='triang').mean()
+            window=15, center=True, min_periods=1, win_type='triang').mean()
         rollc[rollc.columns] = robust_scale(rollc, quantile_range=(5, 95))
         rollc = rollc.add_suffix('_c7min_norm')
 
@@ -393,7 +393,7 @@ class SleepStaging:
 
     def predict(self, path_to_model="auto"):
         """
-        Return the predicted sleep stage for each 20-sec epoch of data.
+        Return the predicted sleep stage for each 30-sec epoch of data.
 
         Currently, only classifiers that were trained using a
         `LGBMClassifier <https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMClassifier.html>`_
@@ -425,7 +425,7 @@ class SleepStaging:
 
     def predict_proba(self, path_to_model="auto"):
         """
-        Return the predicted probability for each sleep stage for each 20-sec epoch of data.
+        Return the predicted probability for each sleep stage for each 30-sec epoch of data.
 
         Currently, only classifiers that were trained using a
         `LGBMClassifier <https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMClassifier.html>`_
@@ -440,7 +440,7 @@ class SleepStaging:
         Returns
         -------
         proba : :py:class:`pandas.DataFrame`
-            The predicted probability for each sleep stage for each 20-sec epoch of data.
+            The predicted probability for each sleep stage for each 30-sec epoch of data.
         """
         if not hasattr(self, '_proba'):
             self.predict(path_to_model)
@@ -450,12 +450,12 @@ class SleepStaging:
                            palette=['#99d7f1', '#009DDC', 'xkcd:twilight blue',
                                     'xkcd:rich purple', 'xkcd:sunflower']):
         """
-        Plot the predicted probability for each sleep stage for each 20-sec epoch of data.
+        Plot the predicted probability for each sleep stage for each 30-sec epoch of data.
 
         Parameters
         ----------
         proba : self or DataFrame
-            A dataframe with the probability of each sleep stage for each 20-sec epoch of data.
+            A dataframe with the probability of each sleep stage for each 30-sec epoch of data.
         majority_only : boolean
             If True, probabilities of the non-majority classes will be set to 0.
         """
@@ -476,6 +476,6 @@ class SleepStaging:
         ax.set_xlim(0, proba.shape[0])
         ax.set_ylim(0, 1)
         ax.set_ylabel("Probability")
-        ax.set_xlabel("Time (20-sec epoch)")
+        ax.set_xlabel("Time (30-sec epoch)")
         plt.legend(frameon=False, bbox_to_anchor=(1, 1))
         return ax
