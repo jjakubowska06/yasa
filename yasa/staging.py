@@ -245,7 +245,7 @@ class SleepStaging:
             dt_filt = filter_data(
                 self.data[i, :], sf, l_freq=freq_broad[0], h_freq=freq_broad[1], verbose=False)
             # - Extract epochs. Data is now of shape (n_epochs, n_samples).
-            times, epochs = sliding_window(dt_filt, sf=sf, window=30)
+            times, epochs = sliding_window(dt_filt, sf=sf, window=20)
 
             # Calculate standard descriptive statistics
             hmob, hcomp = ant.hjorth_params(epochs, axis=1)
@@ -303,7 +303,7 @@ class SleepStaging:
         # Triang: [0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1.,
         #          0.875, 0.75, 0.625, 0.5, 0.375, 0.25, 0.125]
         rollc = features.rolling(
-            window=15, center=True, min_periods=1, win_type='triang').mean()
+            window=10, center=True, min_periods=1, win_type='triang').mean()
         rollc[rollc.columns] = robust_scale(rollc, quantile_range=(5, 95))
         rollc = rollc.add_suffix('_c7min_norm')
 
